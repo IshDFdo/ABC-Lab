@@ -1,11 +1,9 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml"> 
-
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <link rel="stylesheet" href="styles.css" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>User Registration Form</title>
+<title>Appointment Form</title>
 
 <style type="text/css">
   body {
@@ -23,7 +21,7 @@
     text-align: center;
   }
 
-  #registration-form {
+  #appointment-form {
     width: 400px;
     padding: 20px;
     background-color: rgba(0, 0, 0, 0.7);
@@ -48,7 +46,9 @@
   }
 
   input[type="text"],
-  input[type="password"],
+  input[type="email"],
+  input[type="date"],
+  input[type="time"],
   select {
     width: 100%;
     padding: 10px;
@@ -75,6 +75,7 @@
 </style>
 
 
+
 </head>
 
 <body>
@@ -83,7 +84,7 @@
   <div class="logo">Alpha BioMed Clinic</div>
   <ul class="nav-links">
     <div class="menu">
-       <li><a href="home.html">Home</a></li>
+        <li><a href="home.html">Home</a></li>
         <li><a href="Register.php">Register</a></li>
         <li><a href=" Login.php ">Login</a></li>
         <li><a href="services.html">Services </a></li>
@@ -92,36 +93,40 @@
   </ul>
 </nav>
 
-<div id="registration-form">
-<form action="Register.php" method="POST" class="registration-form">
-  <h1>User Registration Form</h1>
-    <label for="name">Username:</label>
-    <input type="text" id="UserName" name="UserName" required />
+<div id="appointment-form">
+  <h1>Appointment Form</h1>
+  <form action="Appointment.php"  method="post" name="Appointment" >
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required />
     
     <label for="email">Email:</label>
-    <input type="text" id= "Email" name="Email" required />
+    <input type="text" id="email" name="email" required />
 
-    <label for="Password">Password:</label>
-    <input type="password" id= "Password" name="Password" required />
+    <label for="date">Date:</label>
+    <input type="date" id="date" name="date" required />
 
-    <label for="Confirm Password">Confirm Password:</label>
-    <input type="password" id="confirm_password" name="confirm_password" required />
+    <label for="time">Time:</label>
+    <input type="time" id="time" name="time" required />
 
-    <!-- Add UserType field with options for Customer, Staff, and Admin -->
-    
+    <label for="doctor">Doctor:</label>
+    <select name="doctor" id="doctor"required>
+      <option value="">Select Doctor</option>
+      <option value="Dr. Smith">Dr. Smith</option>
+      <option value="Dr. Johnson">Dr. Johnson</option>
+      <option value="Dr. Lee">Dr. Lee</option>
+    </select>
   
-    <input type="submit" name="submit" value="Register" />
-    <br>
-    <p>Already have an account? <a href="Login.php">Login </a>.</p>
+    <input type="submit" name="submit" value="Make Appointment & Pay" />
   </form>
 </div>
 
+
 <?php
 // Database connection parameters
-$servername = "localhost"; // Change this if your MySQL server is running on a different host
-$username = "root"; // Your MySQL username
-$password = ""; // Your MySQL password
-$dbname = "abclab"; // Your database name
+$servername = "localhost"; // Change this if your MySQL server is hosted elsewhere
+$username = "root"; // Change this to your MySQL username
+$password = ""; // Change this to your MySQL password
+$dbname = "abclab"; // Change this to your MySQL database name
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -131,28 +136,27 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Retrieve data from the form only if they are set
-if(isset($_POST['UserName']) && isset($_POST['Email']) && isset($_POST['Password'])) {
-    $username = $_POST['UserName'];
-    $email = $_POST['Email'];
-    $password = $_POST['Password'];
+if(isset($_POST['name']) && isset($_POST['email']) && isset($_POST['date']) && isset($_POST['time']) && isset($_POST['doctor'])){
+ // Set parameters and execute
+   $name = $_POST['name'];
+   $email = $_POST['email'];
+   $date = $_POST['date'];
+   $time = $_POST['time'];
+   $doctor = $_POST['doctor'];
 
-    // SQL query to insert data into the table
-    $sql = "INSERT INTO register (UserName, Email, Password) VALUES ('$username', '$email', '$password')";
+// SQL query to insert data into the table
+$sql = "INSERT INTO appointment (Name, Email, Date, Time, Doctor ) VALUES ('$name','$email','$date','$time','$doctor')";
 
-    if ($conn->query($sql) === TRUE) {
-        echo "";
-    } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
-    }
+if ($conn->query($sql) == TRUE) {
+    echo "New record created successfully";
+	header("Location: payment.html");
 } else {
-    echo "";
-}
+    echo "Error: " . $sql . "<br>" . $conn->error;
+}}
 
 // Close the connection
 $conn->close();
 ?>
-
 
 </body>
 </html>

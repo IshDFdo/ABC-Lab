@@ -99,17 +99,17 @@
     
     
     <label for="email">Email:</label>
-    <input type="text" name="email" required />
+    <input type="text" id="email" name="email" required />
 
     <label for="password">Password:</label>
-    <input type="password" name="password" required />
+    <input type="password" id="password" name="password" required />
 
     <!-- Add UserType field with options for Customer, Staff, and Admin -->
     <label for="user_type">User Type:</label>
     <select name="user_type" required>
       <option value="">Select User Type</option>
-      <option value="Customer">Patient</option>
-      <option value="Staff">Doctor</option>
+      <option value="Patient">Patient</option>
+      <option value="Doctor">Doctor</option>
       <option value="Admin">Admin</option>
     </select>
 
@@ -117,6 +117,79 @@
   </form>
   <p>Don't have an account? <a href="Register.php">Create an account</a>.</p>
 </div>
+
+<?php
+$servername = "localhost"; // Change this if your MySQL server is running on a different host
+$username = "root"; // Your MySQL username
+$password = ""; // Your MySQL password
+$dbname = "abclab"; // Your database name
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Assuming your database connection is established here
+
+if (isset($_POST['submit'])) {
+    // Retrieve user inputs
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    $userType = $_POST['user_type'];
+	
+if ($userType=='Patient'){
+    // Perform SQL query to check user credentials
+    $query = "SELECT * FROM register WHERE email='$email' AND password='$password' ";
+	
+    $result = mysqli_query($conn, $query);
+	if ($result->num_rows > 0) 
+{
+    // User authenticated successfully
+    echo "Login successful!";
+	header("Location: patientHome.html");
+} 
+	
+}
+	
+  if ($userType=='Doctor'){
+    // Perform SQL query to check user credentials
+    $query = "SELECT * FROM doctor WHERE email='$email' AND password='$password' ";
+	
+    $result = mysqli_query($conn, $query);
+	if ($result->num_rows > 0) 
+{
+    // User authenticated successfully
+    echo "Login successful!";
+	header("Location: doctorhome.php");
+} 
+	
+}
+	
+	
+	  if ($userType=='Admin'){
+    // Perform SQL query to check user credentials
+    $query = "SELECT * FROM admin WHERE email='$email' AND password='$password' ";
+	
+    $result = mysqli_query($conn, $query);
+	if ($result->num_rows > 0) 
+{
+    // User authenticated successfully
+    echo "Login successful!";
+	header("Location: adminhome.php");
+} 
+	
+}
+}
+
+// Close database connection if opened
+mysqli_close($conn);
+?>
+
+
+
 
 </body>
 </html>
