@@ -23,7 +23,7 @@
         <h1>Welcome Admin</h1>
         <div class="buttons">
             <a href="doctordetails.php"><button id="addDoctor">Add Doctor</button></a>
-            <a href="updatePatientReports.php"><button id="updatePatientReports">Update Patient Reports</button></a>
+            <a href="reports.php"><button id="updatePatientReports">Update Patient Reports</button></a>
         </div>
     </div>
 </body>

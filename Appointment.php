@@ -111,9 +111,37 @@
     <label for="doctor">Doctor:</label>
     <select name="doctor" id="doctor"required>
       <option value="">Select Doctor</option>
-      <option value="Dr. Smith">Dr. Smith</option>
-      <option value="Dr. Johnson">Dr. Johnson</option>
-      <option value="Dr. Lee">Dr. Lee</option>
+           <?php
+            
+            $servername = "localhost"; 
+			$username = "root"; 
+			$password = ""; 
+			$dbname = "abclab";
+
+            // Create connection
+            $conn = new mysqli($servername, $username, $password, $dbname);
+
+            // Check connection
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            // Query to fetch categories from database
+            $sql = "SELECT  id, name FROM doctor";
+            $result = $conn->query($sql);
+
+            // If categories are found, populate the dropdown list
+            if ($result && $result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    echo "<option value='" . $row['name'] . "'>" . $row['name'] . "</option>";
+                }
+            } else {
+                echo "<option value=''>No categories found</option>";
+            }
+
+            // Close the connection
+            $conn->close();
+            ?>
     </select>
   
     <input type="submit" name="submit" value="Make Appointment & Pay" />

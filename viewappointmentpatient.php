@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor Appointment System</title>
     <link rel="stylesheet" href="patientHome.css">
-    
-       <style>
+    <style>
 	 .form-container {
             max-width: 500px;
             margin: 50px auto;
@@ -72,7 +71,6 @@
   input[type="submit"]:hover {
     background-color: #555;
 	</style>
-    
 </head>
 <body>
     <nav class="navbar">
@@ -87,24 +85,21 @@
             </div>
         </ul>
     </nav>
-    <div class="container">
-        <h1>Doctor Appointments</h1>
-        <div class="form-container">
+    <div class="form-container">
          <form action="#" method="post" enctype="multipart/form-data">
             <div class="form-group">
-                <label for="docName">Enter your Name</label>
-                <input type="text" id="name" name="name" required>
-				 <button type="submit">View Appointments</button>
+                <center><label for="appointmentId">Enter your E-mail</label>
+                <input type="text" id="email" name="email" required>
+				 <button type="submit">Submit</button></center>
         </form>
-  
-    
-   <?php
-session_start(); // Start session to access logged-in user data
-
-$servername = "localhost"; // Change this if your MySQL server is running on a different host
-$username = "root"; // Your MySQL username
-$password = ""; // Your MySQL password
-$dbname = "abclab"; // Your database name
+    </div>
+	
+	<?php
+// Database connection parameters
+$servername = "localhost";
+$username = "root"; 
+$password = ""; 
+$dbname = "abclab";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -114,42 +109,40 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Assuming your database connection is established here
+// Check if email is submitted
+if(isset($_POST['email'])) {
+    // Sanitize the email input
+    $email = $conn->real_escape_string($_POST['email']);
 
-if (isset($_POST['name'])) {
-    // Retrieve doctor's name from form
-    $name = $_POST['name'];
+    // SQL query to retrieve appointments for the entered email
+    $sql = "SELECT * FROM appointment WHERE Email='$email'";
+    $result = $conn->query($sql);
 
-    // Perform SQL query to retrieve appointments for the specified doctor's name
-    $query = "SELECT * FROM appointment WHERE Doctor='$name'";
-    $result = mysqli_query($conn, $query);
-
-    // Display appointment details
-    echo "<br><br><h2>Appointments for Dr. $name</h2><br>";
-    if (mysqli_num_rows($result) > 0) {
-        echo "<center><table border='1' bgcolor='white'>";
-        echo "<tr><th>Appointment ID</th><th>Patient Name</th><th>Date</th><th>Time</th></tr>";
-        while ($row = mysqli_fetch_assoc($result)) {
+    // Check if any rows were returned
+    if ($result->num_rows > 0) {
+        // Output table header
+        echo "<table border='1'>";
+        echo "<tr><th>Appointment ID</th><th>Patient Email</th><th>Date</th><th>Time</th></tr>";
+        
+        // Output data of each row
+        while($row = $result->fetch_assoc()) {
             echo "<tr>";
-            echo "<td>" . $row['ID'] . "</td>";
-			echo "<td>" . $row['Name'] . "</td>";
-            echo "<td>" . $row['Date'] . "</td>";
-			echo "<td>" . $row['Time'] . "</td>";
-           
-           
+            echo "<td>".$row["ID"]."</td>";
+            echo "<td>".$row["Email"]."</td>";
+            echo "<td>".$row["Date"]."</td>";
+            echo "<td>".$row["Time"]."</td>";
             echo "</tr>";
         }
-        echo "</table></center>";
+        echo "</table>";
     } else {
-        echo "No appointments found for Dr. $name";
+        echo "No appointments found for this email.";
     }
 }
 
-// Close database connection
-mysqli_close($conn);
+// Close the connection
+$conn->close();
 ?>
-  </div>
-    </div>
-    
+
+
 </body>
 </html>

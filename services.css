@@ -1,0 +1,101 @@
+/* General Styles */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+}
+
+/* Header Styles */
+
+.header {
+    background-color: #007bff;
+    color: #fff;
+    padding: 20px 0;
+}
+
+.logo {
+    margin: 0;
+}
+
+.nav {
+    float: right;
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    display: inline-block;
+    margin-left: 20px;
+}
+
+.nav-item:first-child {
+    margin-left: 0;
+}
+
+.nav-item a {
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Section Styles */
+
+.services {
+    padding: 50px 0;
+}
+
+.section-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.service {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.service-title {
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+.service-description {
+    color: #666;
+}
+
+.service-pricing {
+    color: #888;
+}
+
+.service-link {
+    display: inline-block;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.service-link:hover {
+    text-decoration: underline;
+}
+
+/* Footer Styles */
+
+.footer {
+    background-color: #f9f9f9;
+    color: #333;
+    text-align: center;
+    padding: 20px 0;
+}

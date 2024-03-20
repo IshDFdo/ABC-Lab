@@ -42,6 +42,12 @@
     font-size: 16px;
   }
 
+  .success {
+    color: green;
+    font-family: Consolas, "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", Monaco, "Courier New", monospace;
+    font-size: 16px;
+  }
+
   label {
     display: block;
     margin-bottom: 5px;
@@ -106,9 +112,11 @@
 
     <label for="Confirm Password">Confirm Password:</label>
     <input type="password" id="confirm_password" name="confirm_password" required />
+    
+    <div class="error" id="error_message"></div> <!-- Error message container -->
+    <div class="success" id="success_message"></div> <!-- Success message container -->
 
     <!-- Add UserType field with options for Customer, Staff, and Admin -->
-    
   
     <input type="submit" name="submit" value="Register" />
     <br>
@@ -117,42 +125,77 @@
 </div>
 
 <?php
-// Database connection parameters
-$servername = "localhost"; // Change this if your MySQL server is running on a different host
-$username = "root"; // Your MySQL username
-$password = ""; // Your MySQL password
-$dbname = "abclab"; // Your database name
+class DatabaseConnection {
+    private $servername;
+    private $username;
+    private $password;
+    private $dbname;
+    private $conn;
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+    // Constructor to initialize database connection parameters
+    public function __construct($servername, $username, $password, $dbname) {
+        $this->servername = $servername;
+        $this->username = $username;
+        $this->password = $password;
+        $this->dbname = $dbname;
+    }
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Method to establish a database connection
+    public function connect() {
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
+    }
+
+    // Method to insert data into the database
+    public function insertData($username, $email, $password) {
+        $sql = "INSERT INTO register (UserName, Email, Password) VALUES ('$username', '$email', '$password')";
+        if ($this->conn->query($sql) === TRUE) {
+            echo "<script>document.getElementById('success_message').innerHTML = 'Registration successful';</script>";
+        } else {
+            echo "Error: " . $sql . "<br>" . $this->conn->error;
+        }
+    }
+
+    // Method to close the database connection
+    public function close() {
+        $this->conn->close();
+    }
 }
 
+// Database connection parameters
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "abclab";
+
+// Create a DatabaseConnection object
+$databaseConnection = new DatabaseConnection($servername, $username, $password, $dbname);
+
+// Connect to the database
+$databaseConnection->connect();
+
 // Retrieve data from the form only if they are set
-if(isset($_POST['UserName']) && isset($_POST['Email']) && isset($_POST['Password'])) {
+if(isset($_POST['UserName']) && isset($_POST['Email']) && isset($_POST['Password']) && isset($_POST['confirm_password'])) {
     $username = $_POST['UserName'];
     $email = $_POST['Email'];
     $password = $_POST['Password'];
+    $confirm_password = $_POST['confirm_password'];
 
-    // SQL query to insert data into the table
-    $sql = "INSERT INTO register (UserName, Email, Password) VALUES ('$username', '$email', '$password')";
-
-    if ($conn->query($sql) === TRUE) {
-        echo "";
+    // Check if passwords match
+    if ($password !== $confirm_password) {
+        echo "<script>document.getElementById('error_message').innerHTML = 'Password and confirm password do not match';</script>";
     } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        // Insert data into the database if passwords match
+        $databaseConnection->insertData($username, $email, $password);
     }
 } else {
     echo "";
 }
 
-// Close the connection
-$conn->close();
+// Close the database connection
+$databaseConnection->close();
 ?>
-
-
 </body>
 </html>
