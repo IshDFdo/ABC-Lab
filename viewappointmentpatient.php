@@ -95,28 +95,45 @@
     </div>
 	
 	<?php
-// Database connection parameters
-$servername = "localhost";
-$username = "root"; 
-$password = ""; 
-$dbname = "abclab";
+class Database {
+    private $servername = "localhost";
+    private $username = "root";
+    private $password = "";
+    private $dbname = "abclab";
+    private $conn;
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+    // Constructor to establish database connection
+    public function __construct() {
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
+    }
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Method to retrieve appointments by email
+    public function getAppointmentsByEmail($email) {
+        $email = $this->conn->real_escape_string($email);
+        $sql = "SELECT * FROM appointment WHERE Email='$email'";
+        $result = $this->conn->query($sql);
+        return $result;
+    }
+
+    // Method to close database connection
+    public function closeConnection() {
+        $this->conn->close();
+    }
 }
 
 // Check if email is submitted
 if(isset($_POST['email'])) {
-    // Sanitize the email input
-    $email = $conn->real_escape_string($_POST['email']);
+    // Create database object
+    $db = new Database();
 
-    // SQL query to retrieve appointments for the entered email
-    $sql = "SELECT * FROM appointment WHERE Email='$email'";
-    $result = $conn->query($sql);
+    // Retrieve and sanitize email input
+    $email = $_POST['email'];
+
+    // Retrieve appointments for the entered email
+    $result = $db->getAppointmentsByEmail($email);
 
     // Check if any rows were returned
     if ($result->num_rows > 0) {
@@ -137,11 +154,12 @@ if(isset($_POST['email'])) {
     } else {
         echo "No appointments found for this email.";
     }
-}
 
-// Close the connection
-$conn->close();
+    // Close database connection
+    $db->closeConnection();
+}
 ?>
+
 
 
 </body>

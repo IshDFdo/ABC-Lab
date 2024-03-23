@@ -101,42 +101,62 @@
    <?php
 session_start(); // Start session to access logged-in user data
 
-$servername = "localhost"; // Change this if your MySQL server is running on a different host
-$username = "root"; // Your MySQL username
-$password = ""; // Your MySQL password
-$dbname = "abclab"; // Your database name
+class Database {
+    private $servername = "localhost";
+    private $username = "root";
+    private $password = "";
+    private $dbname = "abclab";
+    private $conn;
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+    // Constructor to establish database connection
+    public function __construct() {
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
+    }
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Method to retrieve appointments for a specified doctor's name
+    public function getAppointmentsByDoctor($name) {
+        $appointments = array();
+        $name = $this->conn->real_escape_string($name);
+        $query = "SELECT * FROM appointment WHERE Doctor='$name'";
+        $result = $this->conn->query($query);
+        if ($result && $result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $appointments[] = $row;
+            }
+        }
+        return $appointments;
+    }
+
+    // Method to close database connection
+    public function closeConnection() {
+        $this->conn->close();
+    }
 }
 
-// Assuming your database connection is established here
+// Create database object
+$db = new Database();
 
+// Check if name is set in the form submission
 if (isset($_POST['name'])) {
-    // Retrieve doctor's name from form
     $name = $_POST['name'];
 
-    // Perform SQL query to retrieve appointments for the specified doctor's name
-    $query = "SELECT * FROM appointment WHERE Doctor='$name'";
-    $result = mysqli_query($conn, $query);
+    // Retrieve appointments for the specified doctor's name
+    $appointments = $db->getAppointmentsByDoctor($name);
 
     // Display appointment details
     echo "<br><br><h2>Appointments for Dr. $name</h2><br>";
-    if (mysqli_num_rows($result) > 0) {
+    if (!empty($appointments)) {
         echo "<center><table border='1' bgcolor='white'>";
         echo "<tr><th>Appointment ID</th><th>Patient Name</th><th>Date</th><th>Time</th></tr>";
-        while ($row = mysqli_fetch_assoc($result)) {
+        foreach ($appointments as $appointment) {
             echo "<tr>";
-            echo "<td>" . $row['ID'] . "</td>";
-			echo "<td>" . $row['Name'] . "</td>";
-            echo "<td>" . $row['Date'] . "</td>";
-			echo "<td>" . $row['Time'] . "</td>";
-           
-           
+            echo "<td>" . $appointment['ID'] . "</td>";
+            echo "<td>" . $appointment['Name'] . "</td>";
+            echo "<td>" . $appointment['Date'] . "</td>";
+            echo "<td>" . $appointment['Time'] . "</td>";
             echo "</tr>";
         }
         echo "</table></center>";
@@ -146,8 +166,9 @@ if (isset($_POST['name'])) {
 }
 
 // Close database connection
-mysqli_close($conn);
+$db->closeConnection();
 ?>
+
   </div>
     </div>
     

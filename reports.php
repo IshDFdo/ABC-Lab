@@ -148,16 +148,35 @@
 
 
 <?php
-$servername = "localhost";
-$username = "root"; 
-$password = ""; 
-$dbname = "abclab"; 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+class Database {
+    private $servername = "localhost";
+    private $username = "root";
+    private $password = "";
+    private $dbname = "abclab";
+    private $conn;
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Constructor to establish database connection
+    public function __construct() {
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
+    }
+
+    // Method to insert report into the database
+    public function insertReport($appointmentId, $targetPath) {
+        $sql = "INSERT INTO report (ID, Report) VALUES ('$appointmentId', '$targetPath')";
+        if ($this->conn->query($sql) === TRUE) {
+            echo "Appointment report uploaded successfully.";
+        } else {
+            echo "Error: " . $sql . "<br>" . $this->conn->error;
+        }
+    }
+
+    // Method to close database connection
+    public function closeConnection() {
+        $this->conn->close();
+    }
 }
 
 // Check if the form is submitted
@@ -166,7 +185,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $appointmentId = $_POST['appointmentId'];
     $fileName = $_FILES['fileToUpload']['name'];
     $tempName = $_FILES['fileToUpload']['tmp_name'];
-    
+
     // Move uploaded file to desired location
     $uploadDirectory = "uploads/";
 
@@ -177,20 +196,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $targetPath = $uploadDirectory . $fileName;
     move_uploaded_file($tempName, $targetPath);
-    
-    // Insert data into database
-    $sql = "INSERT INTO report (ID, Report) VALUES ('$appointmentId', '$targetPath')";
-    
-    if ($conn->query($sql) === TRUE) {
-        echo "Appointment report uploaded successfully.";
-    } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
-    }
-}
 
-// Close connection
-$conn->close();
+    // Create database object
+    $db = new Database();
+
+    // Insert data into database
+    $db->insertReport($appointmentId, $targetPath);
+
+    // Close database connection
+    $db->closeConnection();
+}
 ?>
+
 
 
 </body>

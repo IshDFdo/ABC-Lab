@@ -56,43 +56,64 @@
         </thead>
         <tbody>
             <?php
-            // Database connection parameters
-$servername = "localhost";
-$username = "root"; 
-$password = ""; 
-$dbname = "abclab";
+class Database {
+    private $servername = "localhost";
+    private $username = "root";
+    private $password = "";
+    private $dbname = "abclab";
+    private $conn;
 
-            // Create connection
-            $conn = new mysqli($servername, $username, $password, $dbname);
+    // Constructor to establish database connection
+    public function __construct() {
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
+    }
 
-            // Check connection
-            if ($conn->connect_error) {
-                die("Connection failed: " . $conn->connect_error);
+    // Method to fetch doctor details from the database
+    public function fetchDoctorDetails() {
+        $doctorDetails = array();
+        $sql = "SELECT * FROM doctor";
+        $result = $this->conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $doctorDetails[] = $row;
             }
+        }
+        return $doctorDetails;
+    }
 
-            // SQL query to retrieve doctor details
-            $sql = "SELECT * FROM doctor";
-            $result = $conn->query($sql);
+    // Method to close database connection
+    public function closeConnection() {
+        $this->conn->close();
+    }
+}
 
-            // Check if any rows were returned
-            if ($result->num_rows > 0) {
-                // Output data of each row
-                while($row = $result->fetch_assoc()) {
-                    echo "<tr>";
-                   
-                    echo "<td>".$row["Name"]."</td>";
-                    echo "<td>".$row["Specialty"]."</td>";
-                    echo "<td>".$row["DateTime"]."</td>";
-                    echo "<td>".$row["Email"]."</td>";
-                    echo "</tr>";
-                }
-            } else {
-                echo "<tr><td colspan='5'>No doctors found</td></tr>";
-            }
+// Create database object
+$db = new Database();
 
-            // Close the connection
-            $conn->close();
-            ?>
+// Fetch doctor details
+$doctorDetails = $db->fetchDoctorDetails();
+
+// Output doctor details
+if (!empty($doctorDetails)) {
+    foreach ($doctorDetails as $doctor) {
+        echo "<tr>";
+        echo "<td>".$doctor["Name"]."</td>";
+        echo "<td>".$doctor["Specialty"]."</td>";
+        echo "<td>".$doctor["DateTime"]."</td>";
+        echo "<td>".$doctor["Email"]."</td>";
+        echo "</tr>";
+    }
+} else {
+    echo "<tr><td colspan='5'>No doctors found</td></tr>";
+}
+
+// Close database connection
+$db->closeConnection();
+?>
+
         </tbody>
     </table>
 
