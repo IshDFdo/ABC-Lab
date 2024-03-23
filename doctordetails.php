@@ -116,19 +116,46 @@
 </div>
 
 <?php
-// Database connection parameters
-$servername = "localhost"; // Change this if your MySQL server is running on a different host
-$username = "root"; // Your MySQL username
-$password = ""; // Your MySQL password
-$dbname = "abclab"; // Your database name
+class Database {
+    private $servername = "localhost";
+    private $username = "root";
+    private $password = "";
+    private $dbname = "abclab";
+    private $conn;
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+    // Constructor to establish database connection
+    public function __construct() {
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
+    }
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Method to insert doctor data into the database
+    public function insertDoctor($doctorName, $email, $password, $speciality, $availableTime) {
+        $doctorName = $this->conn->real_escape_string($doctorName);
+        $email = $this->conn->real_escape_string($email);
+        $password = $this->conn->real_escape_string($password);
+        $speciality = $this->conn->real_escape_string($speciality);
+        $availableTime = $this->conn->real_escape_string($availableTime);
+
+        $sql = "INSERT INTO doctor (Name, Email, Specialty, Password, DateTime) VALUES ('$doctorName', '$email', '$speciality', '$password', '$availableTime')";
+        
+        if ($this->conn->query($sql) === TRUE) {
+            echo "Doctor added successfully";
+        } else {
+            echo "Error: " . $sql . "<br>" . $this->conn->error;
+        }
+    }
+
+    // Method to close database connection
+    public function closeConnection() {
+        $this->conn->close();
+    }
 }
+
+// Create database object
+$db = new Database();
 
 // Retrieve data from the form only if they are set
 if(isset($_POST['doctor_name']) && isset($_POST['email']) && isset($_POST['password']) && isset($_POST['speciality']) && isset($_POST['available_time'])) {
@@ -138,21 +165,16 @@ if(isset($_POST['doctor_name']) && isset($_POST['email']) && isset($_POST['passw
     $speciality = $_POST['speciality'];
     $availableTime = $_POST['available_time'];
 
-    // SQL query to insert data into the table
-    $sql = "INSERT INTO doctor (Name, Email, Specialty, Password, DateTime) VALUES ('$doctorName', '$email', '$speciality', '$password', '$availableTime')";
-
-    if ($conn->query($sql) === TRUE) {
-        echo "Doctor added successfully";
-    } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
-    }
+    // Insert doctor data into the database
+    $db->insertDoctor($doctorName, $email, $password, $speciality, $availableTime);
 } else {
     echo "Please fill all the required fields.";
 }
 
-// Close the connection
-$conn->close();
+// Close database connection
+$db->closeConnection();
 ?>
+
 
 
 

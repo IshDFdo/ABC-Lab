@@ -111,37 +111,60 @@
     <label for="doctor">Doctor:</label>
     <select name="doctor" id="doctor"required>
       <option value="">Select Doctor</option>
-           <?php
-            
-            $servername = "localhost"; 
-			$username = "root"; 
-			$password = ""; 
-			$dbname = "abclab";
+               <?php
+class Database {
+    private $servername = "localhost";
+    private $username = "root";
+    private $password = "";
+    private $dbname = "abclab";
+    private $conn;
 
-            // Create connection
-            $conn = new mysqli($servername, $username, $password, $dbname);
+    // Constructor to establish database connection
+    public function __construct() {
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
+    }
 
-            // Check connection
-            if ($conn->connect_error) {
-                die("Connection failed: " . $conn->connect_error);
+    // Method to fetch categories from the database
+    public function fetchCategories() {
+        $categories = array();
+        $sql = "SELECT id, name FROM doctor";
+        $result = $this->conn->query($sql);
+        if ($result && $result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $categories[] = $row['name'];
             }
+        }
+        return $categories;
+    }
 
-            // Query to fetch categories from database
-            $sql = "SELECT  id, name FROM doctor";
-            $result = $conn->query($sql);
+    // Method to close database connection
+    public function closeConnection() {
+        $this->conn->close();
+    }
+}
 
-            // If categories are found, populate the dropdown list
-            if ($result && $result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    echo "<option value='" . $row['name'] . "'>" . $row['name'] . "</option>";
-                }
-            } else {
-                echo "<option value=''>No categories found</option>";
-            }
+// Create database object
+$db = new Database();
 
-            // Close the connection
-            $conn->close();
-            ?>
+// Fetch categories
+$categories = $db->fetchCategories();
+
+// Output categories as dropdown options
+if (!empty($categories)) {
+    foreach ($categories as $category) {
+        echo "<option value='" . $category . "'>" . $category . "</option>";
+    }
+} else {
+    echo "<option value=''>No categories found</option>";
+}
+
+// Close database connection
+$db->closeConnection();
+?>
+
     </select>
   
     <input type="submit" name="submit" value="Make Appointment & Pay" />
@@ -150,40 +173,68 @@
 
 
 <?php
-// Database connection parameters
-$servername = "localhost"; // Change this if your MySQL server is hosted elsewhere
-$username = "root"; // Change this to your MySQL username
-$password = ""; // Change this to your MySQL password
-$dbname = "abclab"; // Change this to your MySQL database name
+class Database1 {
+    private $servername = "localhost";
+    private $username = "root";
+    private $password = "";
+    private $dbname = "abclab";
+    private $conn;
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+    // Constructor to establish database connection
+    public function __construct() {
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
+    }
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Method to insert appointment data into the database
+    public function insertAppointment($name, $email, $date, $time, $doctor) {
+        $name = $this->conn->real_escape_string($name);
+        $email = $this->conn->real_escape_string($email);
+        $date = $this->conn->real_escape_string($date);
+        $time = $this->conn->real_escape_string($time);
+        $doctor = $this->conn->real_escape_string($doctor);
+
+        $sql = "INSERT INTO appointment (Name, Email, Date, Time, Doctor) VALUES ('$name', '$email', '$date', '$time', '$doctor')";
+        
+        if ($this->conn->query($sql) === TRUE) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // Method to close database connection
+    public function closeConnection() {
+        $this->conn->close();
+    }
 }
 
-if(isset($_POST['name']) && isset($_POST['email']) && isset($_POST['date']) && isset($_POST['time']) && isset($_POST['doctor'])){
- // Set parameters and execute
-   $name = $_POST['name'];
-   $email = $_POST['email'];
-   $date = $_POST['date'];
-   $time = $_POST['time'];
-   $doctor = $_POST['doctor'];
+// Check if the form is submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['name']) && isset($_POST['email']) && isset($_POST['date']) && isset($_POST['time']) && isset($_POST['doctor'])) {
+    // Fetch form data
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $date = $_POST['date'];
+    $time = $_POST['time'];
+    $doctor = $_POST['doctor'];
 
-// SQL query to insert data into the table
-$sql = "INSERT INTO appointment (Name, Email, Date, Time, Doctor ) VALUES ('$name','$email','$date','$time','$doctor')";
+    // Create database object
+    $db = new Database1();
 
-if ($conn->query($sql) == TRUE) {
-    echo "New record created successfully";
-	header("Location: payment.html");
-} else {
-    echo "Error: " . $sql . "<br>" . $conn->error;
-}}
+    // Insert appointment data into the database
+    if ($db->insertAppointment($name, $email, $date, $time, $doctor)) {
+        echo "New record created successfully";
+        header("Location: payment.html");
+        exit; // Stop further execution after redirection
+    } else {
+        echo "Error: Unable to create appointment";
+    }
 
-// Close the connection
-$conn->close();
+    // Close database connection
+    $db->closeConnection();
+}
 ?>
 
 </body>

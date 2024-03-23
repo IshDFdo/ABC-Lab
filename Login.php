@@ -119,74 +119,84 @@
 </div>
 
 <?php
-$servername = "localhost"; // Change this if your MySQL server is running on a different host
-$username = "root"; // Your MySQL username
-$password = ""; // Your MySQL password
-$dbname = "abclab"; // Your database name
+class Database {
+    private $servername = "localhost";
+    private $username = "root";
+    private $password = "";
+    private $dbname = "abclab";
+    private $conn;
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+    // Constructor to establish database connection
+    public function __construct() {
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
+    }
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Method to authenticate user based on email, password, and user type
+    public function authenticateUser($email, $password, $userType) {
+        $email = $this->conn->real_escape_string($email);
+        $password = $this->conn->real_escape_string($password);
+        $query = "";
+        
+        if ($userType == 'Patient') {
+            $query = "SELECT * FROM register WHERE email='$email' AND password='$password'";
+        } elseif ($userType == 'Doctor') {
+            $query = "SELECT * FROM doctor WHERE email='$email' AND password='$password'";
+        } elseif ($userType == 'Admin') {
+            $query = "SELECT * FROM admin WHERE email='$email' AND password='$password'";
+        }
+
+        $result = $this->conn->query($query);
+
+        if ($result && $result->num_rows > 0) {
+            // User authenticated successfully
+            return true;
+        } else {
+            // User authentication failed
+            return false;
+        }
+    }
+
+    // Method to close database connection
+    public function closeConnection() {
+        $this->conn->close();
+    }
 }
 
-// Assuming your database connection is established here
-
+// Check if form is submitted
 if (isset($_POST['submit'])) {
-    // Retrieve user inputs
     $email = $_POST['email'];
     $password = $_POST['password'];
     $userType = $_POST['user_type'];
-	
-if ($userType=='Patient'){
-    // Perform SQL query to check user credentials
-    $query = "SELECT * FROM register WHERE email='$email' AND password='$password' ";
-	
-    $result = mysqli_query($conn, $query);
-	if ($result->num_rows > 0) 
-{
-    // User authenticated successfully
-    echo "Login successful!";
-	header("Location: patientHome.html");
-} 
-	
-}
-	
-  if ($userType=='Doctor'){
-    // Perform SQL query to check user credentials
-    $query = "SELECT * FROM doctor WHERE email='$email' AND password='$password' ";
-	
-    $result = mysqli_query($conn, $query);
-	if ($result->num_rows > 0) 
-{
-    // User authenticated successfully
-    echo "Login successful!";
-	header("Location: doctorhome.php");
-} 
-	
-}
-	
-	
-	  if ($userType=='Admin'){
-    // Perform SQL query to check user credentials
-    $query = "SELECT * FROM admin WHERE email='$email' AND password='$password' ";
-	
-    $result = mysqli_query($conn, $query);
-	if ($result->num_rows > 0) 
-{
-    // User authenticated successfully
-    echo "Login successful!";
-	header("Location: adminhome.php");
-} 
-	
-}
-}
 
-// Close database connection if opened
-mysqli_close($conn);
+    // Create database object
+    $db = new Database();
+
+    // Authenticate user
+    if ($db->authenticateUser($email, $password, $userType)) {
+        // User authenticated successfully
+        echo "Login successful!";
+        // Redirect user based on user type
+        if ($userType == 'Patient') {
+            header("Location: patientHome.html");
+        } elseif ($userType == 'Doctor') {
+            header("Location: doctorhome.php");
+        } elseif ($userType == 'Admin') {
+            header("Location: adminhome.php");
+        }
+        exit(); // Stop further execution
+    } else {
+        // User authentication failed
+        echo "Login failed. Please check your credentials.";
+    }
+
+    // Close database connection
+    $db->closeConnection();
+}
 ?>
+
 
 
 

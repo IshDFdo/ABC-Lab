@@ -101,30 +101,35 @@
    
 
     <?php
-    session_start(); // Start session to persist logged-in user data
+// Define a class for handling database operations
+class DatabaseHandler {
+    private $servername;
+    private $username;
+    private $password;
+    private $dbname;
+    private $conn;
 
-    $servername = "localhost"; // Change this if your MySQL server is running on a different host
-    $username = "root"; // Your MySQL username
-    $password = ""; // Your MySQL password
-    $dbname = "abclab"; // Your database name
+    // Constructor to initialize database connection
+    public function __construct($servername, $username, $password, $dbname) {
+        $this->servername = $servername;
+        $this->username = $username;
+        $this->password = $password;
+        $this->dbname = $dbname;
 
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
+        // Create connection
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
 
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
+        // Check connection
+        if ($this->conn->connect_error) {
+            die("Connection failed: " . $this->conn->connect_error);
+        }
     }
 
-    // Assuming your database connection is established here
-
-    if (isset($_POST['appID'])) {
-        // Retrieve appointment ID from form
-        $appointment_id = $_POST['appID'];
-
+    // Method to retrieve reports for a given appointment ID
+    public function getReports($appointment_id) {
         // Perform SQL query to retrieve reports for the specified appointment ID
         $query = "SELECT RepID, Report FROM report WHERE ID='$appointment_id'";
-        $result = mysqli_query($conn, $query);
+        $result = mysqli_query($this->conn, $query);
 
         // Display report details
         echo "<h2>Reports for Appointment ID: $appointment_id</h2><br>";
@@ -141,9 +146,33 @@
         }
     }
 
-    // Close database connection
-    mysqli_close($conn);
-    ?>
+    // Destructor to close database connection
+    public function __destruct() {
+        mysqli_close($this->conn);
+    }
+}
+
+// Start session to persist logged-in user data
+session_start();
+
+// Assuming your database connection is established here
+$servername = "localhost"; // Change this if your MySQL server is running on a different host
+$username = "root"; // Your MySQL username
+$password = ""; // Your MySQL password
+$dbname = "abclab"; // Your database name
+
+// Create an instance of the DatabaseHandler class
+$dbHandler = new DatabaseHandler($servername, $username, $password, $dbname);
+
+if (isset($_POST['appID'])) {
+    // Retrieve appointment ID from form
+    $appointment_id = $_POST['appID'];
+    
+    // Call the getReports method to retrieve and display reports
+    $dbHandler->getReports($appointment_id);
+}
+?>
+
      </div>
 </body>
 </html>
